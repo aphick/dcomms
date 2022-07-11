@@ -4,5 +4,6 @@ conf/element/*
 conf/synapse/*
 conf/caddy/*
 conf/caddy/certs/*
+!conf/caddy/certs/.gitkeep
 !conf/caddy/Caddyfile.tmpl
 conf/mastodon/env.production
