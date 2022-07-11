@@ -12,7 +12,7 @@ if [ -z $DCOMMS_DIR ]; then
     printf "${RED}No directory set for dcomms files.\nPlease edit the "
     printf "'DCOMMS_DIR' variable at the top of this script and run again.${NC}\n"
     exit 1
-elif [ -d $DCOMMS_DIR ]; then
+elif [ -f $DCOMMS_DIR/run.sh ]; then
     printf "${RED}A previous installation of dcomms was found on this system.\n"
     printf "To start your services please use 'run.sh' in '${DCOMMS_DIR}'.${NC}\n" 
     exit 1
@@ -238,10 +238,13 @@ grab_img () {
 #Should also run validation
 grab_cfg () {
     if [[ "${DCOMM_REACHABLE}" == true ]]; then
+        printf "${GREEN}### Grabbing config from Dcomms.${NC}\n"
         curl http://$site/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
     elif [[ "${TORRENT_AVAIL}" == true ]]; then
+        printf "${GREEN}### Grabbing config as a Torrent.${NC}\n"
         aria2c -d  $TMP_DIR_C/$CONF_FILE --seed-time=0 "$CONF_MAGNET"
     elif [[ "${IPFS_REACHABLE}" == true ]]; then
+        printf "${GREEN}### Grabbing config from IPFS.${NC}\n"
         curl https://gateway.ipfs.io/ipfs/QmdnJmd6QPTjbLbo8bet5RwgMJZH4bbVvZ1XVJngLfJw4L/dcomms-conf_v1.tar -o $TMP_DIR_C/$CONF_FILE
     fi
     tar -xvf $TMP_DIR_C/$CONF_FILE -C $DCOMMS_DIR >/dev/null
