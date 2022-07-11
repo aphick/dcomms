@@ -12,29 +12,59 @@
   acme_ca https://acme-v02.api.letsencrypt.org/directory
 }
 
-{{ env "DWEB_DOMAIN" }}, http://{{ env "DWEB_ONION" }} {
+{$DWEB_DOMAIN}, http://{$DWEB_DOMAIN} {
   handle_path /new_email* {
     rewrite * /{path}
-    reverse_proxy http://localhost:3691
+    reverse_proxy http://mailadm:3691
   }
   root * /www
   file_server browse
-  header Onion-Location http://{{ env "DWEB_ONION" }}
+  header Onion-Location http://{$DWEB_ONION}
 }
 
-chat.{{ env "DWEB_DOMAIN" }}, http://chat.{{ env "DWEB_ONION" }} {
-  reverse_proxy http://localhost:8001
-  header Onion-Location http://chat.{{ env "DWEB_ONION" }}
+chat.{$DWEB_DOMAIN}, http://chat.{$DWEB_ONION} {
+  reverse_proxy http://element:8001
+  header Onion-Location http://chat.{$DWEB_ONION}
 }
 
-matrix.{{ env "DWEB_DOMAIN" }}, http://matrix.{{ env "DWEB_ONION" }} {
-  reverse_proxy /_matrix/* http://localhost:8008
-  reverse_proxy /_synapse/client/* http://localhost:8008
-  header Onion-Location http://matrix.{{ env "DWEB_ONION" }}
+matrix.{$DWEB_DOMAIN}, http://matrix.{$DWEB_ONION} {
+  reverse_proxy /_matrix/* http://synapse:8008
+  reverse_proxy /_synapse/client/* http://synapse:8008
+  header Onion-Location http://matrix.{$DWEB_ONION}
 }
 
-matrix.{{ env "DWEB_DOMAIN" }}:8448, http://matrix.{{ env "DWEB_ONION" }}:8448 {
-  reverse_proxy http://localhost:8008
+matrix.{$DWEB_DOMAIN}:8448 {
+  reverse_proxy http://synapse:8008
+}
+
+mastodon.{$DWEB_DOMAIN}, http://mastodon.{$DWEB_ONION} { 
+
+    root * /srv/mastodon/public
+    encode gzip
+    @static file
+    handle @static {
+            file_server
+    }
+    handle /api/v1/streaming* {
+            reverse_proxy http://mastodon-streaming:4000
+    }
+    handle {
+            reverse_proxy http://mastodon-web:3000
+    }
+    header {
+            Strict-Transport-Security "max-age=31536000;"
+    }
+    header Onion-Location http://mastodon.{$DWEB_ONION}
+    header /sw.js  Cache-Control "public, max-age=0";
+    header /emoji* Cache-Control "public, max-age=31536000, immutable"
+    header /packs* Cache-Control "public, max-age=31536000, immutable"
+    header /system/accounts/avatars* Cache-Control "public, max-age=31536000, immutable"
+    header /system/media_attachments/files* Cache-Control "public, max-age=31536000, immutable"
+    handle_errors {
+            @5xx expression `{http.error.status_code} >= 500 && {http.error.status_code} < 600`
+            rewrite @5xx /500.html
+            file_server
+    }
 }
 
 # Refer to the Caddy docs for more information:

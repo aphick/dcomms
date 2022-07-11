@@ -3,4 +3,6 @@ conf/element/*
 !conf/element/nginx.conf
 conf/synapse/*
 conf/caddy/*
+conf/caddy/certs/*
 !conf/caddy/Caddyfile.tmpl
+conf/mastodon/env.production
