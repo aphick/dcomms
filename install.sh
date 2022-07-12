@@ -224,7 +224,7 @@ grab_img () {
             if [ -f $DCOMMS_DIR/$file ]; then
                 printf "${GREEN}$file found on disk. Adding to docker.${NC}\n"
                 DOCKER_FILES=( "${DOCKER_FILES[@]/$file}" )
-                sudo docker load $DCOMMS_DIR/$file
+                cat $DCOMMS_DIR/$file | sudo docker load
             fi
         done
     fi
@@ -257,33 +257,36 @@ grab_img () {
 #Grab config files from one of the available sources.
 #Should also run validation
 grab_cfg () {
-    if [[ "${DCOMM_REACHABLE}" == true ]]; then
-        printf "${GREEN}### Grabbing config from Dcomms.${NC}\n"
-        curl $DCOMM_URL/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
-    elif [[ "${TORRENT_AVAIL}" == true ]]; then
-        printf "${GREEN}### Grabbing config as a Torrent.${NC}\n"
-        aria2c -d  $TMP_DIR_C/$CONF_FILE --seed-time=0 "$CONF_MAGNET"
-    elif [[ "${IPFS_REACHABLE}" == true ]]; then
-        printf "${GREEN}### Grabbing config from IPFS.${NC}\n"
-        curl $IPFS_URL/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
+    if [ -z $DCOMMS_DIR/$CONF_FILE ]; then
+        tar -xvf $DCOMMS_DIR/$CONF_FILE -C $DCOMMS_DIR >/dev/null
+    else
+         if [[ "${DCOMM_REACHABLE}" == true ]]; then
+            printf "${GREEN}### Grabbing config from Dcomms.${NC}\n"
+            curl $DCOMM_URL/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
+        elif [[ "${TORRENT_AVAIL}" == true ]]; then
+            printf "${GREEN}### Grabbing config as a Torrent.${NC}\n"
+            aria2c -d  $TMP_DIR_C/$CONF_FILE --seed-time=0 "$CONF_MAGNET"
+        elif [[ "${IPFS_REACHABLE}" == true ]]; then
+            printf "${GREEN}### Grabbing config from IPFS.${NC}\n"
+            curl $IPFS_URL/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
+        fi
+        tar -xvf $TMP_DIR_C/$CONF_FILE -C $DCOMMS_DIR >/dev/null
     fi
-    tar -xvf $TMP_DIR_C/$CONF_FILE -C $DCOMMS_DIR >/dev/null
 }
 
 #The main function does most of the configuration
 main() {
-
     if [ -z $DCOMMS_DIR ]; then
         printf "${RED}No directory set for dcomms files.\nPlease edit the "
         printf "'DCOMMS_DIR' variable at the top of this script and run again.${NC}\n"
         exit 1
     elif [ -f $DCOMMS_DIR/run.sh ]; then
         printf "${RED}A previous installation of dcomms was found on this system.\n"
-        printf "To start your services please use 'run.sh' in '${DCOMMS_DIR}'.${NC}\n"
+        printf "To start your services please use 'run.sh' in '$DCOMMS_DIR'.${NC}\n"
         exit 1
     elif [ -f $DCOMMS_DIR/caddy_2.5.1.tar ]; then
         #Should document how this works better. Offering sneakernet compatability is great.
-        printf "${RED}Some dcomms Docker image files were found in $DCOMMS_DIRi.\n"
+        printf "${GREEN}Some dcomms Docker image files were found in $DCOMMS_DIR.\n"
         printf "Would you like to use your local copies instead of downloading new ones?.${NC}\n"
         export LOCAL_FILES=true
     fi
