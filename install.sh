@@ -189,13 +189,13 @@ detect_connectivity () {
         ((i=i+=1))
     fi
 
-    if curl -s -m 3 https://ipfs.io/ -o /dev/null; then
-        printf "${GREEN}## Successfully connected to IPFS${NC}\n"
-        IPFS_REACHABLE=true
-    else
-        printf "${RED}## Unable to connect to IPFS${NC}\n"
-        ((i=i+=1))
-    fi
+#    if curl -s -m 3 https://ipfs.io/ -o /dev/null; then
+#        printf "${GREEN}## Successfully connected to IPFS${NC}\n"
+#        IPFS_REACHABLE=true
+#    else
+#        printf "${RED}## Unable to connect to IPFS${NC}\n"
+#        ((i=i+=1))
+#    fi
 
     if (( i == 4 )); then
         printf "\n\n${RED}## All methods of retrieving Dcomms docker images have failed${NC}\n"
