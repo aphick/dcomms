@@ -5,18 +5,9 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+set -e
 # Directory to save dcomms config files in
 DCOMMS_DIR=
-
-if [ -z $DCOMMS_DIR ]; then
-    printf "${RED}No directory set for dcomms files.\nPlease edit the "
-    printf "'DCOMMS_DIR' variable at the top of this script and run again.${NC}\n"
-    exit 1
-elif [ -f $DCOMMS_DIR/run.sh ]; then
-    printf "${RED}A previous installation of dcomms was found on this system.\n"
-    printf "To start your services please use 'run.sh' in '${DCOMMS_DIR}'.${NC}\n" 
-    exit 1
-fi
 
 COMPOSE_FILES="-f ./conf/compose/docker-compose.yml "
 
@@ -36,6 +27,15 @@ DCOMMS_INSTANCES=(
     "rivne.dcomm.net.ua"
     "kherson.dcomm.net.ua"
     "mykolayiv.dcomm.net.ua"
+)
+
+IPFS_GATEWAYS=(
+    "cf-ipfs.com/ipfs"
+    "gateway.ipfs.io/ipfs"
+    "cloudflare-ipfs.com/ipfs/"
+    "ipfs.io/ipfs"
+    "ipfs.best-practice.se/ipfs"
+    "ipfs.2read.net/ipfs"
 )
 
 IPFS_DIR="QmdnJmd6QPTjbLbo8bet5RwgMJZH4bbVvZ1XVJngLfJw4L"
@@ -94,6 +94,63 @@ check_requirements () {
         printf "blockages and allow users to connect anonymously to your server.\n"
         printf "If you would like this functionality enabled please install 'tor'${NC}\n"
     fi
+}
+
+detect_connectivity () {
+    # This function tests all available means to retrieve the Dcomms repository.
+    if sudo docker pull hello-world >/dev/null 2>&1; then
+        sudo docker rmi hello-world >/dev/null 2>&1
+        printf "${GREEN}## Successfully connected to Docker Hub${NC}\n"
+        HUB_REACHABLE=true
+    else
+        printf "${RED}## Unable to connect to Docker Hub${NC}\n"
+        ((i=i+=1))
+    fi
+
+    for site in ${DCOMMS_INSTANCES[@]}; do
+        #this function should be more complex
+        if curl -s -m 3 https://$site/dcomms -o /tmp/dcomms; then
+            if (( $(stat -c %s /tmp/dcomms) > 3 )); then
+                DCOMM_URL=https://$site/dcomms
+                printf "${GREEN}## Successfully connected to $site${NC}\n"
+                DCOMM_REACHABLE=true
+                rm /tmp/dcomms
+                break
+            fi
+            rm /tmp/dcomms
+        fi
+    done
+
+    if [[ "${DCOMM_REACHABLE}" == true ]]; then
+        printf "${RED}## Unable to connect to Dcomms instance${NC}\n"
+        ((i=i+=1))
+    fi
+
+#    for site in ${IPFS_GATEWAYS[@]}; do
+#        #this function should be more complex
+#        if curl -s -m 30 https://$site/$IPFS_DIR/hashes.txt -o /tmp/dcomms; then
+#            if (( $(stat -c %s /tmp/dcomms) > 3 )); then
+#                IPFS_URL=https://$site/$IPFS_DIR/
+#                printf "${GREEN}## Successfully connected to $site${NC}\n"
+#                IPFS_REACHABLE=true
+#                rm /tmp/dcomms
+#                break
+#            fi
+#            rm /tmp/dcomms
+#        fi
+#    done
+#
+#    if [[ "${IPFS_REACHABLE}" == true ]]; then
+#        printf "${RED}## Unable to connect to IPFS gateway${NC}\n"
+#        ((i=i+=1))
+#    fi
+
+
+    if (( i == 4 )); then
+        printf "\n\n${RED}## All methods of retrieving Dcomms docker images have failed${NC}\n"
+        exit 1
+    fi
+
 }
 
 #Spins up a temporary docker container to generate synapse config files and keys
@@ -158,56 +215,19 @@ mau_config () {
     sed -i "s/admins:/&\n  admin: $MAU_PW/" $DCOMMS_DIR/conf/mau/config.yaml
 }
 
-
-detect_connectivity () {
-    # This function tests all available means to retrieve the Dcomms repository.
-    if sudo docker pull hello-world >/dev/null 2>&1; then
-        sudo docker rmi hello-world >/dev/null 2>&1
-        printf "${GREEN}## Successfully connected to Docker Hub${NC}\n"
-        HUB_REACHABLE=true
-    else
-        printf "${RED}## Unable to connect to Docker Hub${NC}\n"
-        ((i=i+=1))
-    fi
-
-    for site in ${DCOMMS_INSTANCES[@]}; do
-        #this function should be more complex
-        if curl -s -m 3 http://$site/dcomms -o /tmp/dcomms; then
-            if (( $(stat -c %s /tmp/dcomms) > 3 )); then
-                INSTANCE=$site
-                printf "${GREEN}## Successfully connected to $site${NC}\n"
-                DCOMM_REACHABLE=true
-                rm /tmp/dcomms
-                break
-            fi
-            rm /tmp/dcomms
-        fi
-    done
-
-    if [ -z $INSTANCE ]; then
-        printf "${RED}## Unable to connect to Dcomms${NC}\n"
-        ((i=i+=1))
-    fi
-
-#    if curl -s -m 3 https://ipfs.io/ -o /dev/null; then
-#        printf "${GREEN}## Successfully connected to IPFS${NC}\n"
-#        IPFS_REACHABLE=true
-#    else
-#        printf "${RED}## Unable to connect to IPFS${NC}\n"
-#        ((i=i+=1))
-#    fi
-
-    if (( i == 4 )); then
-        printf "\n\n${RED}## All methods of retrieving Dcomms docker images have failed${NC}\n"
-        exit 1
-    fi
-
-}
-
 #Use one of a number of means to grab docker images. 
 #There NEEDS to be some kind of verification step in here that requires manual intervention
 #Also ideally expand out the number of methods
 grab_img () {
+    if [[ "${LOCAL_FILES}" == true ]]; then
+        for file in ${DOCKER_FILES[@]}; do
+            if [ -f $DCOMMS_DIR/$file ]; then
+                printf "${GREEN}$file found on disk. Adding to docker.${NC}\n"
+                DOCKER_FILES=( "${DOCKER_FILES[@]/$file}" )
+                sudo docker load $DCOMMS_DIR/$file
+            fi
+        done
+    fi
     if [[ "${HUB_REACHABLE}" == true ]]; then
         printf "${GREEN}### Grabbing images from Docker Hub.${NC}\n"
         for img in ${D_IMAGES[@]}; do
@@ -219,11 +239,11 @@ grab_img () {
     printf "${YELLOW}### Unable to reach Docker Hub. Using mirror.${NC}\n"
     for file in ${DOCKER_FILES[@]}; do
         if [[ "${DCOMM_REACHABLE}" == true ]]; then
-            curl http://$site/$file -o $TMP_DIR_F/$file 
+            curl $DCOMM_URL/$file -o $TMP_DIR_F/$file 
         elif [[ "${TORRENT_AVAIL}" == true ]]; then
             aria2c -d $TMP_DIR_F/$file --seed-time=0 "${FILE_MAGNETS[@]}" >/dev/null
         elif [[ "${IPFS_REACHABLE}" == true ]]; then
-            curl https://gateway.ipfs.io/ipfs/QmdnJmd6QPTjbLbo8bet5RwgMJZH4bbVvZ1XVJngLfJw4L/$file -o $TMP_DIR_F/$file >/dev/null
+            curl $IPFS_URL/$file -o $TMP_DIR_F/$file
         fi
         ((j=j+=1))
     done
@@ -239,19 +259,35 @@ grab_img () {
 grab_cfg () {
     if [[ "${DCOMM_REACHABLE}" == true ]]; then
         printf "${GREEN}### Grabbing config from Dcomms.${NC}\n"
-        curl http://$site/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
+        curl $DCOMM_URL/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
     elif [[ "${TORRENT_AVAIL}" == true ]]; then
         printf "${GREEN}### Grabbing config as a Torrent.${NC}\n"
         aria2c -d  $TMP_DIR_C/$CONF_FILE --seed-time=0 "$CONF_MAGNET"
     elif [[ "${IPFS_REACHABLE}" == true ]]; then
         printf "${GREEN}### Grabbing config from IPFS.${NC}\n"
-        curl https://gateway.ipfs.io/ipfs/QmdnJmd6QPTjbLbo8bet5RwgMJZH4bbVvZ1XVJngLfJw4L/dcomms-conf_v1.tar -o $TMP_DIR_C/$CONF_FILE
+        curl $IPFS_URL/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
     fi
     tar -xvf $TMP_DIR_C/$CONF_FILE -C $DCOMMS_DIR >/dev/null
 }
 
 #The main function does most of the configuration
 main() {
+
+    if [ -z $DCOMMS_DIR ]; then
+        printf "${RED}No directory set for dcomms files.\nPlease edit the "
+        printf "'DCOMMS_DIR' variable at the top of this script and run again.${NC}\n"
+        exit 1
+    elif [ -f $DCOMMS_DIR/run.sh ]; then
+        printf "${RED}A previous installation of dcomms was found on this system.\n"
+        printf "To start your services please use 'run.sh' in '${DCOMMS_DIR}'.${NC}\n"
+        exit 1
+    elif [ -f $DCOMMS_DIR/caddy_2.5.1.tar ]; then
+        #Should document how this works better. Offering sneakernet compatability is great.
+        printf "${RED}Some dcomms Docker image files were found in $DCOMMS_DIRi.\n"
+        printf "Would you like to use your local copies instead of downloading new ones?.${NC}\n"
+        export LOCAL_FILES=true
+    fi
+
     export NEWT_COLORS='
     root=,black
     checkbox=,black
@@ -352,10 +388,12 @@ main() {
 
     detect_connectivity
 
-    mkdir $DCOMMS_DIR
- 
+    if [[ "${LOCAL_FILES}" == false ]]; then
+        mkdir $DCOMMS_DIR
+    fi
     grab_img
     grab_cfg
+
 
     if [[ "${MATRIX}" == true ]]; then
         matrix_config
