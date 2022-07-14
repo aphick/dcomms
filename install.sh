@@ -121,7 +121,7 @@ detect_connectivity () {
         fi
     done
 
-    if [[ "${DCOMM_REACHABLE}" == true ]]; then
+    if [[ "${DCOMM_REACHABLE}" == false ]]; then
         printf "${RED}## Unable to connect to Dcomms instance${NC}\n"
         ((i=i+=1))
     fi
@@ -140,14 +140,21 @@ detect_connectivity () {
 #        fi
 #    done
 #
-#    if [[ "${IPFS_REACHABLE}" == true ]]; then
+#    if [[ "${IPFS_REACHABLE}" == false ]]; then
 #        printf "${RED}## Unable to connect to IPFS gateway${NC}\n"
 #        ((i=i+=1))
 #    fi
 
-
-    if (( i == 4 )); then
-        printf "\n\n${RED}## All methods of retrieving Dcomms docker images have failed${NC}\n"
+    # 'i' is the number of failed methods. Change as needed
+    if (( i == 3 )); then
+        printf "\n\n${RED}## All methods of retrieving Dcomms docker images have failed\n"
+        printf "## Don't despair!\n"
+        printf "## If you manage to retrieve the images listed below, place them in $DCOMMS_DIR \n"
+	printf "## and re-run this script.\n"
+        for i in ${D_IMAGES[@]}; do
+             printf "$i\n"
+        done
+	printf "${NC}"
         exit 1
     fi
 
