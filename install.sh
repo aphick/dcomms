@@ -12,11 +12,18 @@ DCOMMS_DIR=
 COMPOSE_FILES="-f ./conf/compose/docker-compose.yml "
 
 # Docker saved file names
-DOCKER_FILES=("caddy_2.5.1.tar")
-D_IMAGES=("caddy:2.5.1")
-FILE_MAGNETS=("${MAGNET_LINKS[0]}$MAG_TRACKERS")
+FILES=(
+    "dcomms-conf_v1.tar"
+    "caddy_2.5.1.tar"
+)
 
-CONF_FILE="dcomms-conf_v1.tar"
+D_IMAGES=("caddy:2.5.1")
+
+FILE_MAGNETS=(
+    "${MAGNET_LINKS[2]}$MAG_TRACKERS"
+    "${MAGNET_LINKS[0]}$MAG_TRACKERS"
+)
+
 
 DCOMMS_INSTANCES=(
     "kyiv.dcomm.net.ua"
@@ -47,6 +54,7 @@ MAG_TRACKERS="&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A
 MAGNET_LINKS=(
     "magnet:?xt=urn:btih:BCADB433F6B22E040137482728110A8573EA6550&dn=caddy_2.5.1.tar"
     "magnet:?xt=urn:btih:3049C0A1E9EA85C229ABC1E252100F6F75C62AE9&dn=ceno-client_v0.21.1.tar"
+    "magnet:?xt=urn:btih:C4A2659BC8B2A10924F017970F35815DE90B0283&dn=dcomms-conf_v1.tar"
     "magnet:?xt=urn:btih:DC06F639170378BB09F8B762A9C6F1D813599195&dn=deltachat-mailadm-dovecot_v0.0.1.tar"
     "magnet:?xt=urn:btih:F1CC8614114FA87FEA8AE47FB1C572DCD8AFC1B0&dn=deltachat-mailadm-postfix_v0.0.3.tar"
     "magnet:?xt=urn:btih:CFED08F4ACD38AE7B741970418B5B76B459E3B0B&dn=deltachat-mailadm_v0.0.1.tar"
@@ -58,7 +66,7 @@ MAGNET_LINKS=(
     "magnet:?xt=urn:btih:B44D1CADF49884521403C2E50F7487D7355BADBC&dn=synapse_v1.60.0.tar"
 )
 
-CONF_MAGNET="magnet:?xt=urn:btih:C4A2659BC8B2A10924F017970F35815DE90B0283&dn=dcomms-conf_v1.tar$MAG_TRACKERS"
+CONF_MAGNET=""
 #CONF_MAGNET="$MAG_TRACKERS"
 
 export HUB_REACHABLE=false
@@ -99,7 +107,7 @@ check_requirements () {
 
 detect_connectivity () {
     # This function tests all available means to retrieve the Dcomms repository.
-    if sudo docker pull hello-world >/dev/null 2>&1; then
+    if  sudo docker pull hello-world >/dev/null 2>&1; then
         sudo docker rmi hello-world >/dev/null 2>&1
         printf "${GREEN}## Successfully connected to Docker Hub${NC}\n"
         HUB_REACHABLE=true
@@ -147,11 +155,11 @@ detect_connectivity () {
 #    fi
 
     # 'i' is the number of failed methods. Change as needed
-    if (( i == 3 )); then
+    if (( i == 4 )); then
         printf "\n\n${RED}## All methods of retrieving Dcomms docker images have failed\n"
         printf "## Don't despair!\n"
-        printf "## If you manage to retrieve the images listed below, place them in $DCOMMS_DIR \n"
-	printf "## and re-run this script.\n"
+        printf "## If you manage to retrieve tarfiles of the images listed below\n"
+      	printf "## place them in the $DCOMMS_DIR folder and re-run this script.\n"
         for i in ${D_IMAGES[@]}; do
              printf "$i\n"
         done
@@ -223,63 +231,27 @@ mau_config () {
     sed -i "s/admins:/&\n  admin: $MAU_PW/" $DCOMMS_DIR/conf/mau/config.yaml
 }
 
-#Use one of a number of means to grab docker images. 
-#There NEEDS to be some kind of verification step in here that requires manual intervention
-#Also ideally expand out the number of methods
-grab_img () {
-    if [[ "${LOCAL_FILES}" == true ]]; then
-        for file in ${DOCKER_FILES[@]}; do
-            if [ -f $DCOMMS_DIR/$file ]; then
-                printf "${GREEN}$file found on disk. Adding to docker.${NC}\n"
-                DOCKER_FILES=( "${DOCKER_FILES[@]/$file}" )
-                cat $DCOMMS_DIR/$file | sudo docker load
-            fi
-        done
-    fi
-    if [[ "${HUB_REACHABLE}" == true ]]; then
-        printf "${GREEN}### Grabbing images from Docker Hub.${NC}\n"
-        for img in ${D_IMAGES[@]}; do
-            sudo docker pull $img >/dev/null
-        done
-        return
-    fi
+grab_files () {
     j=0
-    printf "${YELLOW}### Unable to reach Docker Hub. Using mirror.${NC}\n"
-    for file in ${DOCKER_FILES[@]}; do
-        if [[ "${DCOMM_REACHABLE}" == true ]]; then
-            curl $DCOMM_URL/$file -o $TMP_DIR_F/$file 
+    for file in ${FILES[@]}; do
+        if [ -f $DCOMMS_DIR/images/$file ]; then
+            printf "${GREEN}$file found on disk.${NC}\n"
+            cat $DCOMMS_DIR/images/$file | sudo docker load
+        elif [[ "${DCOMM_REACHABLE}" == true ]]; then
+            printf "${GREEN}Downloading $file using Dcomm mirror.${NC}\n"
+            curl $DCOMM_URL/$file -o $TMP_DIR_F/$file
         elif [[ "${TORRENT_AVAIL}" == true ]]; then
+            printf "${GREEN}Downloading $file using torrent.${NC}\n"
             aria2c -d $TMP_DIR_F/$file --seed-time=0 "${FILE_MAGNETS[@]}" >/dev/null
         elif [[ "${IPFS_REACHABLE}" == true ]]; then
+            printf "${GREEN}Downloading $file using IPFS.${NC}\n"
             curl $IPFS_URL/$file -o $TMP_DIR_F/$file
+        fi
+        if (( j == 0 )); then
+            tar -xvf $TMP_DIR_F/$file -C $DCOMMS_DIR >/dev/null    
         fi
         ((j=j+=1))
     done
-    #Might be wise to bring this out of this function so that we can validate before loading
-    for f in $TMP_DIR_F/*.tar; do
-        echo ""
-        cat $f | sudo docker load
-    done
-}
-
-#Grab config files from one of the available sources.
-#Should also run validation
-grab_cfg () {
-    if [ -z $DCOMMS_DIR/$CONF_FILE ]; then
-        tar -xvf $DCOMMS_DIR/$CONF_FILE -C $DCOMMS_DIR >/dev/null
-    else
-         if [[ "${DCOMM_REACHABLE}" == true ]]; then
-            printf "${GREEN}### Grabbing config from Dcomms.${NC}\n"
-            curl $DCOMM_URL/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
-        elif [[ "${TORRENT_AVAIL}" == true ]]; then
-            printf "${GREEN}### Grabbing config as a Torrent.${NC}\n"
-            aria2c -d  $TMP_DIR_C/$CONF_FILE --seed-time=0 "$CONF_MAGNET"
-        elif [[ "${IPFS_REACHABLE}" == true ]]; then
-            printf "${GREEN}### Grabbing config from IPFS.${NC}\n"
-            curl $IPFS_URL/$CONF_FILE -o $TMP_DIR_C/$CONF_FILE
-        fi
-        tar -xvf $TMP_DIR_C/$CONF_FILE -C $DCOMMS_DIR >/dev/null
-    fi
 }
 
 #The main function does most of the configuration
@@ -288,15 +260,10 @@ main() {
         printf "${RED}No directory set for dcomms files.\nPlease edit the "
         printf "'DCOMMS_DIR' variable at the top of this script and run again.${NC}\n"
         exit 1
-    elif [ -f $DCOMMS_DIR/run.sh ]; then
+    elif [ -f $DCOMMS_DIR/run.sh ] || [ -d $DCOMMS_DIR/conf/ ]; then
         printf "${RED}A previous installation of dcomms was found on this system.\n"
         printf "To start your services please use 'run.sh' in '$DCOMMS_DIR'.${NC}\n"
         exit 1
-    elif [ -f $DCOMMS_DIR/caddy_2.5.1.tar ]; then
-        #Should document how this works better. Offering sneakernet compatability is great.
-        printf "${GREEN}Some dcomms Docker image files were found in $DCOMMS_DIR.\n"
-        printf "Will use instead of downloading.${NC}\n"
-        export LOCAL_FILES=true
     fi
 
     export NEWT_COLORS='
@@ -341,36 +308,36 @@ main() {
         case "$CHOICE" in
         "1")
             D_IMAGES+=("keith/deltachat-mailadm-postfix:v0.0.3" "keith/deltachat-mailadm-dovecot:v0.0.1" "keith/deltachat-mailadm:v0.0.1")
-            DOCKER_FILES+=("dovecot_v0.0.1.tar" "mailadm_v0.0.1.tar" "postfix_v0.0.3.tar")
-            FILE_MAGNETS+=("${MAGNET_LINKS[2]}$MAG_TRACKERS" "${MAGNET_LINKS[4]}$MAG_TRACKERS" "${MAGNET_LINKS[3]}$MAG_TRACKERS")
+            FILES+=("dovecot_v0.0.1.tar" "mailadm_v0.0.1.tar" "postfix_v0.0.3.tar")
+            FILE_MAGNETS+=("${MAGNET_LINKS[3]}$MAG_TRACKERS" "${MAGNET_LINKS[5]}$MAG_TRACKERS" "${MAGNET_LINKS[4]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/delta.docker-compose.yml "
             DELTA=true
           ;;
         "2")
             D_IMAGES+=("vectorim/element-web:v1.10.14" "matrixdotorg/synapse:v1.60.0")
-            DOCKER_FILES+=("synapse_v1.60.0.tar" "element-web_v1.10.14.tar")
-            FILE_MAGNETS+=("${MAGNET_LINKS[10]}$MAG_TRACKERS" "${MAGNET_LINKS[5]}$MAG_TRACKERS")
+            FILES+=("synapse_v1.60.0.tar" "element-web_v1.10.14.tar")
+            FILE_MAGNETS+=("${MAGNET_LINKS[11]}$MAG_TRACKERS" "${MAGNET_LINKS[6]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/element.docker-compose.yml "
             MATRIX=true
           ;;
         "3")
             D_IMAGES+=("equalitie/ceno-client:v0.21.1")
-            DOCKER_FILES+=("ceno-client_v0.21.1.tar")
+            FILES+=("ceno-client_v0.21.1.tar")
             FILE_MAGNETS+=("${MAGNET_LINKS[1]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/bridge.docker-compose.yml "
             CENO=true
           ;;
         "4")
             D_IMAGES+=("dock.mau.dev/maubot/maubot:v0.3.1")
-            DOCKER_FILES+=("maubot_v0.3.1.tar")
-            FILE_MAGNETS+=("${MAGNET_LINKS[7]}$MAG_TRACKERS")
+            FILES+=("maubot_v0.3.1.tar")
+            FILE_MAGNETS+=("${MAGNET_LINKS[8]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/mau.docker-compose.yml "
             MAU=true
           ;;
         "5")
             D_IMAGES+=("aphick/mastodon-sendmail:0.2" "redis:6.0-alpine" "postgres:12.2-alpine")
-            DOCKER_FILES+=("mastodon-sendmail_0.2.tar" "postgres_12.2.tar" "redis_6.0.tar")
-            FILE_MAGNETS+=("${MAGNET_LINKS[6]}$MAG_TRACKERS" "${MAGNET_LINKS[8]}$MAG_TRACKERS" "${MAGNET_LINKS[9]}$MAG_TRACKERS")
+            FILES+=("mastodon-sendmail_0.2.tar" "postgres_12.2.tar" "redis_6.0.tar")
+            FILE_MAGNETS+=("${MAGNET_LINKS[7]}$MAG_TRACKERS" "${MAGNET_LINKS[9]}$MAG_TRACKERS" "${MAGNET_LINKS[10]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/mastodon.docker-compose.yml "
             MASTO=true
           ;;
@@ -383,9 +350,8 @@ main() {
     fi
 
     TMP_DIR_F=$(mktemp -d)    
-    TMP_DIR_C=$(mktemp -d)
 
-    trap 'rm -rf "$TMP_DIR_C" && rm -rf "$TMP_DIR_F"' EXIT 
+    trap 'rm -rf "$TMP_DIR_C"' EXIT 
 
     if [[ "${MAU}" == true ]] && [[ "${MATRIX}" == false ]]; then
         print "${RED}##Mau is a Matrix bot. You must install Matrix as well.${NC}\n"
@@ -399,12 +365,26 @@ main() {
 
     detect_connectivity
 
-    if [[ "${LOCAL_FILES}" == false ]]; then
-        mkdir $DCOMMS_DIR
+    mkdir -p $DCOMMS_DIR/{conf,images}
+    if [[ "${HUB_REACHABLE}" == true ]]; then
+        di=1
+        printf "${GREEN}### Grabbing images from Docker Hub.${NC}\n"
+        for img in ${D_IMAGES[@]}; do
+            echo "dimg = $img"
+            if sudo docker pull $img; then
+                unset 'FILES[$di]'
+                ((di=di+=1))
+            fi
+           
+        done
     fi
-    grab_img
-    grab_cfg
+    grab_files
 
+    #Might be wise to bring this out of this function so that we can validate before loading
+    for f in $DCOMMS_DIR/images/*.tar; do
+        echo ""
+        cat $f | sudo docker load
+    done
 
     if [[ "${MATRIX}" == true ]]; then
         matrix_config
