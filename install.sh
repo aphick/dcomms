@@ -67,6 +67,7 @@ export IPFS_REACHABLE=false
 export TOR_AVAIL=false
 i=0
 
+echo "This script requires root access to interact with Docker. Please enter your password if prompted."
 sudo echo ""
 
 #This funciton uses which to discover what packages are installed on this system.
@@ -294,7 +295,7 @@ main() {
     elif [ -f $DCOMMS_DIR/caddy_2.5.1.tar ]; then
         #Should document how this works better. Offering sneakernet compatability is great.
         printf "${GREEN}Some dcomms Docker image files were found in $DCOMMS_DIR.\n"
-        printf "Would you like to use your local copies instead of downloading new ones?.${NC}\n"
+        printf "Will use instead of downloading.${NC}\n"
         export LOCAL_FILES=true
     fi
 
