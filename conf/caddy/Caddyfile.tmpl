@@ -12,6 +12,10 @@
   acme_ca https://acme-v02.api.letsencrypt.org/directory
 }
 
+#{
+#  local_certs
+#}
+
 {$DWEB_DOMAIN}, http://{$DWEB_DOMAIN} {
   handle_path /new_email* {
     rewrite * /{path}

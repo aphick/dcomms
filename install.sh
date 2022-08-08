@@ -236,7 +236,6 @@ grab_files () {
     for file in ${FILES[@]}; do
         if [ -f $DCOMMS_DIR/images/$file ]; then
             printf "${GREEN}$file found on disk.${NC}\n"
-            cat $DCOMMS_DIR/images/$file | sudo docker load
         elif [[ "${DCOMM_REACHABLE}" == true ]]; then
             printf "${GREEN}Downloading $file using Dcomm mirror.${NC}\n"
             curl $DCOMM_URL/$file -o $TMP_DIR_F/$file
@@ -249,6 +248,8 @@ grab_files () {
         fi
         if (( j == 0 )); then
             tar -xvf $TMP_DIR_F/$file -C $DCOMMS_DIR >/dev/null    
+        else
+            mv $TMP_DIR_F/$file $DCOMMS_DIR/images/$file
         fi
         ((j=j+=1))
     done
