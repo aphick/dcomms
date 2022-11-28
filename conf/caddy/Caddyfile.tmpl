@@ -41,7 +41,7 @@ matrix.{$DWEB_DOMAIN}:8448 {
   reverse_proxy http://synapse:8008
 }
 
-mastodon.{$DWEB_DOMAIN}, http://mastodon.{$DWEB_ONION} { 
+social.{$DWEB_DOMAIN}, http://social.{$DWEB_ONION} { 
 
     root * /srv/mastodon/public
     encode gzip
@@ -50,6 +50,9 @@ mastodon.{$DWEB_DOMAIN}, http://mastodon.{$DWEB_ONION} {
             file_server
     }
     handle /api/v1/streaming* {
+            reverse_proxy http://mastodon-streaming:4000
+    }
+    handle /api/v2/streaming* {
             reverse_proxy http://mastodon-streaming:4000
     }
     handle {

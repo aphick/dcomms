@@ -177,13 +177,21 @@ matrix_config () {
         -e SYNAPSE_SERVER_NAME=matrix.$DWEB_DOMAIN \
         -e SYNAPSE_REPORT_STATS=no \
         -e SYNAPSE_DATA_DIR=/data \
-    matrixdotorg/synapse:v1.53.0 generate >/dev/null
+    matrixdotorg/synapse:v1.63.0 generate >/dev/null
     sudo chown -R $USER:$USER $DCOMMS_DIR/conf/synapse/
-    sed -i 's/#enable_registration: false/enable_registration: true/' $DCOMMS_DIR/conf/synapse/homeserver.yaml
-    sed -i 's/#registration_requires_token: true/registration_requires_token: true/' $DCOMMS_DIR/conf/synapse/homeserver.yaml
-    sed -i 's/#encryption_enabled_by_default_for_room_type: invite/encryption_enabled_by_default_for_room_type: all/' $DCOMMS_DIR/conf/synapse/homeserver.yaml
-    sed -i 's/#rc_registration:/rc_registration:\n  per_second: 0.1 \n  burst_count: 2/' $DCOMMS_DIR/conf/synapse/homeserver.yaml
-    sed -i 's/^presence:/presence:\n  enabled: false/' $DCOMMS_DIR/conf/synapse/homeserver.yaml
+
+    sed -i -z "s/database.*homeserver.db//" $DCOMMS_DIR/conf/element/config.json
+    sed -i "s/# vim:ft=yaml//" $DCOMMS_DIR/conf/element/config.json
+
+    printf "enable_registration: true\n" >> $DCOMMS_DIR/conf/element/config.json
+    printf "registration_requires_token: true\n" >> $DCOMMS_DIR/conf/element/config.json
+    printf "encryption_enabled_by_default_for_room_type: all\n" >> $DCOMMS_DIR/conf/element/config.json
+    printf "rc_registration:\n  per_second: 0.1 \n  burst_count: 2\n" >> $DCOMMS_DIR/conf/element/config.json
+    printf "presence:\n  enabled: false\n" >> $DCOMMS_DIR/conf/element/config.json
+    printf "database:\n  name: psycopg2\n  txn_limit: 10000\n  args:\n" >> $DCOMMS_DIR/conf/element/config.json
+    printf "    user: synapse\n    password: null\n    database: synapse\n    host: localhost\n" >> $DCOMMS_DIR/conf/element/config.json
+    printf "    port: 5432\n    cp_min: 5\n    cp_max: 10\n" >> $DCOMMS_DIR/conf/element/config.json
+
     sed -i "s/TEMPLATE/$DWEB_DOMAIN/" $DCOMMS_DIR/conf/element/config.json
 }
 
@@ -195,28 +203,28 @@ mastodon_config () {
     sudo cp -a $DCOMMS_DIR/conf/mastodon/example.env.production $DCOMMS_DIR/conf/mastodon/env.production
     SECRET_KEY_BASE=`sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 aphick/mastodon-sendmail:0.2 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.0.2 \
         bundle exec rake secret` >/dev/null
 
     OTP_SECRET=$(sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 aphick/mastodon-sendmail:0.2 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.0.2 \
         bundle exec rake secret) >/dev/null
 
     VAPID_KEYS=$(sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 aphick/mastodon-sendmail:0.2 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.0.2 \
         bundle exec rake mastodon:webpush:generate_vapid_key)>/dev/null
     VAPID_FRIENDLY_KEYS=${VAPID_KEYS//$'\n'/\\$'\n'}
 
-    REDIS_PW=$(openssl rand -base64 12)
+    #REDIS_PW=$(openssl rand -base64 12)
 
     sed -i "s/REPLACEME/$DWEB_DOMAIN/" $DCOMMS_DIR/conf/mastodon/env.production
     sed -i "s/SECRET_KEY_BASE=/&$SECRET_KEY_BASE/" $DCOMMS_DIR/conf/mastodon/env.production
     sed -i "s/OTP_SECRET=/&$OTP_SECRET/" $DCOMMS_DIR/conf/mastodon/env.production
     sed -i "s/VAPID_KEYS=/$VAPID_FRIENDLY_KEYS/" $DCOMMS_DIR/conf/mastodon/env.production
     sed -i 's/\r$//g' $DCOMMS_DIR/conf/mastodon/env.production
-    sed -i "s/ALTERNATE_DOMAINS=mastodon./&$DWEB_ONION/" $DCOMMS_DIR/conf/mastodon/env.production
+    sed -i "s/ALTERNATE_DOMAINS=social./&$DWEB_ONION/" $DCOMMS_DIR/conf/mastodon/env.production
     sed -i "s/SMTP_SERVER=/&$DWEB_DOMAIN/" $DCOMMS_DIR/conf/mastodon/env.production
     #sed -i "s/REDIS_PASSWORD=/&$REDIS_PW/" $DCOMMS_DIR/conf/mastodon/env.production
 }
@@ -229,7 +237,7 @@ mau_config () {
     printf "${RED}## Mau credentials = admin:$MAU_PW${NC}\n"
     MAU_CREDS="admin:$MAU_PW"
     sed -i "s/admins:/&\n  admin: $MAU_PW/" $DCOMMS_DIR/conf/mau/config.yaml
-}
+}   
 
 grab_files () {
     j=0

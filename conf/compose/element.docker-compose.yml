@@ -70,7 +70,7 @@ services:
 
   # element is a matrix web GUI running as a service
   element:
-    image: vectorim/element-web:v1.10.14
+    image: vectorim/element-web:v1.11.2
     networks:
       - back
     ports:
