@@ -255,7 +255,8 @@ grab_files () {
             curl $IPFS_URL/$file -o $TMP_DIR_F/$file
         fi
         if (( j == 0 )); then
-            tar -xvf $TMP_DIR_F/$file -C $DCOMMS_DIR >/dev/null    
+            echo ""
+	    #tar -xvf $TMP_DIR_F/$file -C $DCOMMS_DIR >/dev/null    
         else
             mv $TMP_DIR_F/$file $DCOMMS_DIR/images/$file
         fi
