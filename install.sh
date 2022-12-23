@@ -177,7 +177,7 @@ matrix_config () {
         -e SYNAPSE_SERVER_NAME=matrix.$DWEB_DOMAIN \
         -e SYNAPSE_REPORT_STATS=no \
         -e SYNAPSE_DATA_DIR=/data \
-    matrixdotorg/synapse:v1.74.0 generate >/dev/null
+    matrixdotorg/synapse:v1.74.0 generate 2>/dev/null
     sudo chown -R $USER:$USER $DCOMMS_DIR/conf/synapse/
 
     sed -i -z "s/database.*homeserver.db//" $DCOMMS_DIR/conf/element/config.json
@@ -396,17 +396,17 @@ main() {
 #        cat $f | sudo docker load
 #    done
 
+    echo "#!/bin/bash" > $DCOMMS_DIR/run.sh
     if [[ "${MATRIX}" == true ]]; then
         matrix_config
     fi
     if [[ "${MAU}" == true ]]; then
         mau_config
+ 	echo 'echo "Mau credentials = '${MAU_CREDS}'"' >> $DCOMMS_DIR/run.sh
     fi
     if [[ "${MASTO}" == true ]]; then
         mastodon_config
     fi
-    echo "#!/bin/bash" > $DCOMMS_DIR/run.sh
-    echo 'echo "Mau credentials = '${MAU_CREDS}'"' >> $DCOMMS_DIR/run.sh
     echo "sudo DWEB_ONION=$DWEB_ONION DWEB_DOMAIN=$DWEB_DOMAIN DWEB_FRIENDLY_DOMAIN=$DWEB_FRIENDLY_DOMAIN docker compose $COMPOSE_FILES up -d" >> $DCOMMS_DIR/run.sh
     chmod +x $DCOMMS_DIR/run.sh
     printf "${GREEN} Dcomms succesfully installed! Start your services by running 'run.sh' in $DCOMMS_DIR.${NC}\n"
