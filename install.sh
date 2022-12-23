@@ -7,17 +7,17 @@ NC='\033[0m'
 
 set -e
 # Directory to save dcomms config files in
-DCOMMS_DIR=
+DCOMMS_DIR=$PWD/conf
 
 COMPOSE_FILES="-f ./conf/compose/docker-compose.yml "
 
 # Docker saved file names
 FILES=(
     "dcomms-conf_v1.tar"
-    "caddy_2.5.1.tar"
+    "caddy_2.6.2.tar"
 )
 
-D_IMAGES=("caddy:2.5.1")
+D_IMAGES=("caddy:2.6.2")
 
 FILE_MAGNETS=(
     "${MAGNET_LINKS[2]}$MAG_TRACKERS"
@@ -177,7 +177,7 @@ matrix_config () {
         -e SYNAPSE_SERVER_NAME=matrix.$DWEB_DOMAIN \
         -e SYNAPSE_REPORT_STATS=no \
         -e SYNAPSE_DATA_DIR=/data \
-    matrixdotorg/synapse:v1.63.0 generate >/dev/null
+    matrixdotorg/synapse:v1.74.0 generate >/dev/null
     sudo chown -R $USER:$USER $DCOMMS_DIR/conf/synapse/
 
     sed -i -z "s/database.*homeserver.db//" $DCOMMS_DIR/conf/element/config.json
@@ -323,15 +323,15 @@ main() {
             DELTA=true
           ;;
         "2")
-            D_IMAGES+=("vectorim/element-web:v1.10.14" "matrixdotorg/synapse:v1.60.0")
-            FILES+=("synapse_v1.60.0.tar" "element-web_v1.10.14.tar")
+            D_IMAGES+=("vectorim/element-web:v1.11.17" "matrixdotorg/synapse:v1.74.0")
+            FILES+=("synapse_v1.74.0.tar" "element-web_v1.11.17.tar")
             FILE_MAGNETS+=("${MAGNET_LINKS[11]}$MAG_TRACKERS" "${MAGNET_LINKS[6]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/element.docker-compose.yml "
             MATRIX=true
           ;;
         "3")
-            D_IMAGES+=("equalitie/ceno-client:v0.21.1")
-            FILES+=("ceno-client_v0.21.1.tar")
+            D_IMAGES+=("equalitie/ceno-client:v0.21.2")
+            FILES+=("ceno-client_v0.21.2.tar")
             FILE_MAGNETS+=("${MAGNET_LINKS[1]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/bridge.docker-compose.yml "
             CENO=true
@@ -344,8 +344,8 @@ main() {
             MAU=true
           ;;
         "5")
-            D_IMAGES+=("aphick/mastodon-sendmail:0.2" "redis:6.0-alpine" "postgres:12.2-alpine")
-            FILES+=("mastodon-sendmail_0.2.tar" "postgres_12.2.tar" "redis_6.0.tar")
+            D_IMAGES+=("tootsuite/mastodon:v4.0.2" "redis:7.0-alpine" "postgres:14-alpine")
+            FILES+=("mastodon_4.0.2.tar" "postgres_14.tar" "redis_7.0.tar")
             FILE_MAGNETS+=("${MAGNET_LINKS[7]}$MAG_TRACKERS" "${MAGNET_LINKS[9]}$MAG_TRACKERS" "${MAGNET_LINKS[10]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/mastodon.docker-compose.yml "
             MASTO=true

@@ -16,7 +16,7 @@ services:
 
   mastodon-redis:
     restart: always
-    image: redis:6.0-alpine
+    image: redis:7.0-alpine
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
     env_file: ../mastodon/env.production
