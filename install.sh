@@ -7,7 +7,7 @@ NC='\033[0m'
 
 set -e
 # Directory to save dcomms config files in
-DCOMMS_DIR=$PWD/conf
+DCOMMS_DIR=$PWD
 
 COMPOSE_FILES="-f ./conf/compose/docker-compose.yml "
 
@@ -269,7 +269,7 @@ main() {
         printf "${RED}No directory set for dcomms files.\nPlease edit the "
         printf "'DCOMMS_DIR' variable at the top of this script and run again.${NC}\n"
         exit 1
-    elif [ -f $DCOMMS_DIR/run.sh ] || [ -d $DCOMMS_DIR/conf/ ]; then
+    elif [ -f $DCOMMS_DIR/run.sh ]; then # || [ -d $DCOMMS_DIR/conf/ ]; then
         printf "${RED}A previous installation of dcomms was found on this system.\n"
         printf "To start your services please use 'run.sh' in '$DCOMMS_DIR'.${NC}\n"
         exit 1
@@ -374,7 +374,7 @@ main() {
 
     detect_connectivity
 
-    mkdir -p $DCOMMS_DIR/{conf,images}
+    mkdir -p $DCOMMS_DIR/images
     if [[ "${HUB_REACHABLE}" == true ]]; then
         di=1
         printf "${GREEN}### Grabbing images from Docker Hub.${NC}\n"
