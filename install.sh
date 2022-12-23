@@ -391,10 +391,10 @@ main() {
     grab_files
 
     #Might be wise to bring this out of this function so that we can validate before loading
-    for f in $DCOMMS_DIR/images/*.tar; do
-        echo ""
-        cat $f | sudo docker load
-    done
+#    for f in $DCOMMS_DIR/images/*.tar; do
+#        echo ""
+#        cat $f | sudo docker load
+#    done
 
     if [[ "${MATRIX}" == true ]]; then
         matrix_config
