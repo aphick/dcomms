@@ -13,14 +13,14 @@ COMPOSE_FILES="-f ./conf/compose/docker-compose.yml "
 
 # Docker saved file names
 FILES=(
-    "dcomms-conf_v1.tar"
+    "dcomms_conf_v2.tar" # If we can grab the install script we can likely grab the configs.
     "caddy_2.6.2.tar"
 )
 
 D_IMAGES=("caddy:2.6.2")
 
 FILE_MAGNETS=(
-    "${MAGNET_LINKS[2]}$MAG_TRACKERS"
+    "${MAGNET_LINKS[1]}$MAG_TRACKERS"
     "${MAGNET_LINKS[0]}$MAG_TRACKERS"
 )
 
@@ -37,33 +37,33 @@ DCOMMS_INSTANCES=(
 )
 
 IPFS_GATEWAYS=(
+    "ipfs.io/ipfs"
     "cf-ipfs.com/ipfs"
     "gateway.ipfs.io/ipfs"
     "cloudflare-ipfs.com/ipfs/"
-    "ipfs.io/ipfs"
     "ipfs.best-practice.se/ipfs"
     "ipfs.2read.net/ipfs"
 )
 
-IPFS_DIR="QmdnJmd6QPTjbLbo8bet5RwgMJZH4bbVvZ1XVJngLfJw4L"
+IPFS_DIR="QmbCFPd8ACTicxQsuDyUfm1C1jMwveocdVDn2K3nruaaVF"
 
 #List of trackers for generating the magnet link, only use this once to save on space
 MAG_TRACKERS="&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2F9.rarbg.com%3A2810%2Fannounce&tr=udp%3A%2F%2Fopen.tracker.cl%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A6969%2Fannounce&tr=http%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=udp%3A%2F%2Fopentracker.i2p.rocks%3A6969%2Fannounce&tr=https%3A%2F%2Fopentracker.i2p.rocks%3A443%2Fannounce&tr=udp%3A%2F%2Fwww.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&tr=udp%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.tiny-vps.com%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.dler.org%3A6969%2Fannounce&tr=udp%3A%2F%2Ftr.cili001.com%3A8070%2Fannounce&tr=udp%3A%2F%2Fipv4.tracker.harry.lu%3A80%2Fannounce&tr=udp%3A%2F%2Fexplodie.org%3A6969%2Fannounce&tr=udp%3A%2F%2Fbt.oiyo.tk%3A6969%2Fannounce&tr=https%3A%2F%2Ftracker.nanoha.org%3A443%2Fannounce&tr=https%3A%2F%2Ftracker.logirl.moe%3A443%2Fannounce&tr=https%3A%2F%2Ftracker.lilithraws.org%3A443%2Fannounce"
 
 #Big ugly blob of links. Yikes
 MAGNET_LINKS=(
-    "magnet:?xt=urn:btih:BCADB433F6B22E040137482728110A8573EA6550&dn=caddy_2.5.1.tar"
-    "magnet:?xt=urn:btih:3049C0A1E9EA85C229ABC1E252100F6F75C62AE9&dn=ceno-client_v0.21.1.tar"
-    "magnet:?xt=urn:btih:C4A2659BC8B2A10924F017970F35815DE90B0283&dn=dcomms-conf_v1.tar"
-    "magnet:?xt=urn:btih:DC06F639170378BB09F8B762A9C6F1D813599195&dn=deltachat-mailadm-dovecot_v0.0.1.tar"
-    "magnet:?xt=urn:btih:F1CC8614114FA87FEA8AE47FB1C572DCD8AFC1B0&dn=deltachat-mailadm-postfix_v0.0.3.tar"
-    "magnet:?xt=urn:btih:CFED08F4ACD38AE7B741970418B5B76B459E3B0B&dn=deltachat-mailadm_v0.0.1.tar"
-    "magnet:?xt=urn:btih:3AE1FCB573DE6D6B66A82C651F6F39449D2E8BB1&dn=element-web_v1.10.14.tar"
-    "magnet:?xt=urn:btih:FDB9A84967278CB506C637E482297672C567BB43&dn=mastodon-sendmail_0.2.tar"
-    "magnet:?xt=urn:btih:4F6522CED130784EBD0846F2B4A56C10A3D02641&dn=maubot_v0.3.1.tar"
-    "magnet:?xt=urn:btih:E278B8C1386477E8728C77AC3478D60ECE20E0AE&dn=postgres_14-alpine.tar"
-    "magnet:?xt=urn:btih:EB9DC0FC067DFC1DEC9208EA3C4232E57AB43344&dn=redis_6.0-alpine.tar"
-    "magnet:?xt=urn:btih:B44D1CADF49884521403C2E50F7487D7355BADBC&dn=synapse_v1.60.0.tar"
+	"magnet:?xt=urn:btih:806E6EA23B5098BB112B1C1EA6ACF1D4E374C1D8&dn=dcomms_conf_v2.tar"
+	"magnet:?xt=urn:btih:F1A024E0878324F3749193A28DE6C4C33252E670&dn=caddy_2.6.2.tar"
+	"magnet:?xt=urn:btih:9F004AEF55ECE1DF2908F6FA33C7FC7CDD5EEE43&dn=ceno-client_latest.tar"
+	"magnet:?xt=urn:btih:A8865661D17C7C1669738DE3892A245CBFE0B384&dn=deltachat-mailadm-dovecot_v0.0.1.tar"
+	"magnet:?xt=urn:btih:15DC00304F12941B9DC03103ABE70FA27D4FDB1A&dn=deltachat-mailadm-postfix_v0.0.3.tar"
+	"magnet:?xt=urn:btih:0DB1E810B538AE6B73C12F20461D8D90ADAE4372&dn=deltachat-mailadm_v0.0.1.tar"
+	"magnet:?xt=urn:btih:DD660DDCE77DBEBB3CBCDDE45600203DAD5FE488&dn=element-web_v1.11.17.tar"
+	"magnet:?xt=urn:btih:10975BDBDE587EF8AA44B3978293C65875A701DB&dn=mastodon_v4.0.2.tar"
+	"magnet:?xt=urn:btih:5D74122C024622B2E02DE5D852A17D5C22C2C28F&dn=maubot_v0.3.1.tar"
+	"magnet:?xt=urn:btih:824829D5F526A82C7209160C3E709B4BA6624442&dn=postgres_14-alpine.tar"
+	"magnet:?xt=urn:btih:4EEDD83F3DD76489F3AB70F07035CDE5B87C0A65&dn=redis_7.0-alpine.tar"
+	"magnet:?xt=urn:btih:24116174AF54EC4DD47015E634F3DB1B6B2A9DA3&dn=synapse_v1.74.0.tar"
 )
 
 CONF_MAGNET=""
@@ -135,24 +135,24 @@ detect_connectivity () {
         ((i=i+=1))
     fi
 
-#    for site in ${IPFS_GATEWAYS[@]}; do
-#        #this function should be more complex
-#        if curl -s -m 30 https://$site/$IPFS_DIR/hashes.txt -o /tmp/dcomms; then
-#            if (( $(stat -c %s /tmp/dcomms) > 3 )); then
-#                IPFS_URL=https://$site/$IPFS_DIR/
-#                printf "${GREEN}## Successfully connected to $site${NC}\n"
-#                IPFS_REACHABLE=true
-#                rm /tmp/dcomms
-#                break
-#            fi
-#            rm /tmp/dcomms
-#        fi
-#    done
-#
-#    if [[ "${IPFS_REACHABLE}" == false ]]; then
-#        printf "${RED}## Unable to connect to IPFS gateway${NC}\n"
-#        ((i=i+=1))
-#    fi
+    for site in ${IPFS_GATEWAYS[@]}; do
+        #this function should be more complex
+        if curl -s -m 30 https://$site/$IPFS_DIR/hashes.txt -o /tmp/dcomms; then
+            if (( $(stat -c %s /tmp/dcomms) > 3 )); then
+                IPFS_URL=https://$site/$IPFS_DIR/
+                printf "${GREEN}## Successfully connected to $site${NC}\n"
+                IPFS_REACHABLE=true
+                rm /tmp/dcomms
+                break
+            fi
+            rm /tmp/dcomms
+        fi
+    done
+
+    if [[ "${IPFS_REACHABLE}" == false ]]; then
+        printf "${RED}## Unable to connect to IPFS gateway${NC}\n"
+        ((i=i+=1))
+    fi
 
     # 'i' is the number of failed methods. Change as needed
     if (( i == 4 )); then
@@ -227,6 +227,13 @@ mastodon_config () {
     sed -i "s/ALTERNATE_DOMAINS=social./&$DWEB_ONION/" $DCOMMS_DIR/conf/mastodon/env.production
     sed -i "s/SMTP_SERVER=/&$DWEB_DOMAIN/" $DCOMMS_DIR/conf/mastodon/env.production
     #sed -i "s/REDIS_PASSWORD=/&$REDIS_PW/" $DCOMMS_DIR/conf/mastodon/env.production
+    
+    printf "${YELLOW}## Initializing mastodon database${NC}\n"
+    
+    docker compose -f ./conf/mastodon/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:prepare
+    docker compose -f ./conf/mastodon/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:migrate
+
+    docker volume rm -f masto_data_tmp
 }
 
 mau_config () {
@@ -318,7 +325,7 @@ main() {
         case "$CHOICE" in
         "1")
             D_IMAGES+=("keith/deltachat-mailadm-postfix:v0.0.3" "keith/deltachat-mailadm-dovecot:v0.0.1" "keith/deltachat-mailadm:v0.0.1")
-            FILES+=("dovecot_v0.0.1.tar" "mailadm_v0.0.1.tar" "postfix_v0.0.3.tar")
+            FILES+=("deltachat-mailadm-dovecot_v0.0.1.tar" "deltachat-mailadm_v0.0.1.tar" "deltachat-mailadm-postfix_v0.0.3.tar")
             FILE_MAGNETS+=("${MAGNET_LINKS[3]}$MAG_TRACKERS" "${MAGNET_LINKS[5]}$MAG_TRACKERS" "${MAGNET_LINKS[4]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/delta.docker-compose.yml "
             DELTA=true
