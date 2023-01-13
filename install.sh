@@ -19,11 +19,6 @@ FILES=(
 
 D_IMAGES=("caddy:2.6.2")
 
-FILE_MAGNETS=(
-    "${MAGNET_LINKS[1]}$MAG_TRACKERS"
-    "${MAGNET_LINKS[0]}$MAG_TRACKERS"
-)
-
 
 DCOMMS_INSTANCES=(
     "kyiv.dcomm.net.ua"
@@ -40,7 +35,7 @@ IPFS_GATEWAYS=(
     "ipfs.io/ipfs"
     "cf-ipfs.com/ipfs"
     "gateway.ipfs.io/ipfs"
-    "cloudflare-ipfs.com/ipfs/"
+    "cloudflare-ipfs.com/ipfs"
     "ipfs.best-practice.se/ipfs"
     "ipfs.2read.net/ipfs"
 )
@@ -64,6 +59,12 @@ MAGNET_LINKS=(
 	"magnet:?xt=urn:btih:824829D5F526A82C7209160C3E709B4BA6624442&dn=postgres_14-alpine.tar"
 	"magnet:?xt=urn:btih:4EEDD83F3DD76489F3AB70F07035CDE5B87C0A65&dn=redis_7.0-alpine.tar"
 	"magnet:?xt=urn:btih:24116174AF54EC4DD47015E634F3DB1B6B2A9DA3&dn=synapse_v1.74.0.tar"
+)
+
+
+FILE_MAGNETS=(
+    "${MAGNET_LINKS[0]}$MAG_TRACKERS"
+    "${MAGNET_LINKS[1]}$MAG_TRACKERS"
 )
 
 CONF_MAGNET=""
@@ -101,7 +102,8 @@ check_requirements () {
     else
         printf "${YELLOW}## This script can take advantage of Tor to route around "
         printf "blockages and allow users to connect anonymously to your server.\n"
-        printf "If you would like this functionality enabled please install 'tor'${NC}\n"
+        printf "If you would like this functionality enabled please install 'tor'"
+	printf "from your package manager and re-run the script.${NC}\n"
     fi
 }
 
@@ -139,7 +141,7 @@ detect_connectivity () {
         #this function should be more complex
         if curl -s -m 30 https://$site/$IPFS_DIR/hashes.txt -o /tmp/dcomms; then
             if (( $(stat -c %s /tmp/dcomms) > 3 )); then
-                IPFS_URL=https://$site/$IPFS_DIR/
+                IPFS_URL=https://$site/$IPFS_DIR
                 printf "${GREEN}## Successfully connected to $site${NC}\n"
                 IPFS_REACHABLE=true
                 rm /tmp/dcomms
@@ -191,6 +193,11 @@ matrix_config () {
     printf "database:\n  name: psycopg2\n  txn_limit: 10000\n  args:\n" >> $DCOMMS_DIR/conf/element/config.json
     printf "    user: synapse\n    password: null\n    database: synapse\n    host: localhost\n" >> $DCOMMS_DIR/conf/element/config.json
     printf "    port: 5432\n    cp_min: 5\n    cp_max: 10\n" >> $DCOMMS_DIR/conf/element/config.json
+
+    printf "${YELLOW}## Initializing mastodon database${NC}\n"
+
+    docker compose -f ./conf/mastodon/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:prepare
+    docker compose -f ./conf/mastodon/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:migrate
 
     sed -i "s/TEMPLATE/$DWEB_DOMAIN/" $DCOMMS_DIR/conf/element/config.json
 }
@@ -254,16 +261,16 @@ grab_files () {
         elif [[ "${DCOMM_REACHABLE}" == true ]]; then
             printf "${GREEN}Downloading $file using Dcomm mirror.${NC}\n"
             curl $DCOMM_URL/$file -o $TMP_DIR_F/$file
-        elif [[ "${TORRENT_AVAIL}" == true ]]; then
-            printf "${GREEN}Downloading $file using torrent.${NC}\n"
-            aria2c -d $TMP_DIR_F/$file --seed-time=0 "${FILE_MAGNETS[@]}" >/dev/null
         elif [[ "${IPFS_REACHABLE}" == true ]]; then
             printf "${GREEN}Downloading $file using IPFS.${NC}\n"
             curl $IPFS_URL/$file -o $TMP_DIR_F/$file
+        elif [[ "${TORRENT_AVAIL}" == true ]]; then
+            printf "${GREEN}Downloading $file using torrent.${NC}\n"
+            aria2c -d $TMP_DIR_F/$file --seed-time=0 "${FILE_MAGNETS[$j]}" >/dev/null
         fi
         if (( j == 0 )); then
             echo ""
-	    #tar -xvf $TMP_DIR_F/$file -C $DCOMMS_DIR >/dev/null    
+	    tar -xvf $TMP_DIR_F/$file -C $DCOMMS_DIR >/dev/null    
         else
             mv $TMP_DIR_F/$file $DCOMMS_DIR/images/$file
         fi
@@ -340,7 +347,7 @@ main() {
         "3")
             D_IMAGES+=("equalitie/ceno-client:v0.21.2")
             FILES+=("ceno-client_v0.21.2.tar")
-            FILE_MAGNETS+=("${MAGNET_LINKS[1]}$MAG_TRACKERS")
+            FILE_MAGNETS+=("${MAGNET_LINKS[2]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/bridge.docker-compose.yml "
             CENO=true
           ;;
