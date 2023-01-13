@@ -90,7 +90,7 @@ check_requirements () {
     fi
     if ! which aria2c>/dev/null; then
         printf "${YELLOW}## This script requires aria2 to download torrents in "
-        printf "the event that Docker Hub or the Dcomms servers are unreachable.\n"
+        printf "the event that Docker Hub or the dComms servers are unreachable.\n"
         printf "If you require this functionality please install 'aria2'${NC}\n"
         TORRENT_AVAIL=false
         ((i=i+=1))
@@ -108,7 +108,7 @@ check_requirements () {
 }
 
 detect_connectivity () {
-    # This function tests all available means to retrieve the Dcomms repository.
+    # This function tests all available means to retrieve the dComms repository.
     if  sudo docker pull hello-world >/dev/null 2>&1; then
         sudo docker rmi hello-world >/dev/null 2>&1
         printf "${GREEN}## Successfully connected to Docker Hub${NC}\n"
@@ -133,7 +133,7 @@ detect_connectivity () {
     done
 
     if [[ "${DCOMM_REACHABLE}" == false ]]; then
-        printf "${RED}## Unable to connect to Dcomms instance${NC}\n"
+        printf "${RED}## Unable to connect to dComms instance${NC}\n"
         ((i=i+=1))
     fi
 
@@ -158,7 +158,7 @@ detect_connectivity () {
 
     # 'i' is the number of failed methods. Change as needed
     if (( i == 4 )); then
-        printf "\n\n${RED}## All methods of retrieving Dcomms docker images have failed\n"
+        printf "\n\n${RED}## All methods of retrieving dComms docker images have failed\n"
         printf "## Don't despair!\n"
         printf "## If you manage to retrieve tarfiles of the images listed below\n"
       	printf "## place them in the $DCOMMS_DIR folder and re-run this script.\n"
@@ -423,7 +423,7 @@ main() {
     fi
     echo "sudo DWEB_ONION=$DWEB_ONION DWEB_DOMAIN=$DWEB_DOMAIN DWEB_FRIENDLY_DOMAIN=$DWEB_FRIENDLY_DOMAIN docker compose $COMPOSE_FILES up -d" >> $DCOMMS_DIR/run.sh
     chmod +x $DCOMMS_DIR/run.sh
-    printf "${GREEN} Dcomms succesfully installed! Start your services by running 'run.sh' in $DCOMMS_DIR.${NC}\n"
+    printf "${GREEN} dComms succesfully installed! Start your services by running 'run.sh' in $DCOMMS_DIR.${NC}\n"
 }
 
 main
