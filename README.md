@@ -59,11 +59,41 @@ Clone or download this repository.  Review `./install.sh` and make any that may 
 
 Once your server meets the prerequisites, installation simply involves running `./install.sh` and responding to any prompts. Configs will be automatically placed in your `DCOMMS_DIR` and a `run.sh` script will be generated.
 
+<<<<<<< HEAD
 * Note: If you wish to reinstall dcomms you will need to delete all docker volumes, and the `conf` directory in `DCOMMS_DIR` before running `install.sh` again.
 
 ## Redeploy
 
 In the future, if you need to start the dcomms containers again simply run the `./run.sh` program in your `DCOMMS_DIR`.
+=======
+### Specify a docker worker node to host all other services
+
+* Add the `node.labels.dwebstackdomain` label that matches the subdomain you wish to provision to the node:
+```
+docker node update --label-add=dwebstackdomain=server1.example.org <nodeid>
+```
+
+## Provision
+
+Provision a dcomms server as `server1.example.org`.  From the manager node type:
+
+```
+DWEB_DOMAIN=server1.example.org ./dcomm.sh
+```
+
+## Redeploy
+
+In the future, to redeploy or restart all dcomms services on `server1.example.org`, from the manager node type:
+```
+DWEB_DOMAIN=server1.example.org ./dcomm.sh
+```
+
+### Generate new configs
+
+**This action is destructive!**
+To overwrite generated configs, run the script with the `regen` argument.
+The script will prompt you before it overwrites any configuration files.
+>>>>>>> main
 
 # Tor
 

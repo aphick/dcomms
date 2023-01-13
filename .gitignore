@@ -1,10 +1,18 @@
+docker-compose.yml-prod
 conf/element/*
-!conf/element/config.json
-!conf/element/nginx.conf
+conf/mastodon/*
 conf/synapse/*
 conf/caddy/*
+<<<<<<< HEAD
 conf/caddy/certs/*
 !conf/caddy/certs/.gitkeep
+=======
+conf/mau/*
+!conf/element/config.json
+!conf/element/nginx.conf
+!conf/mastodon/mastodon.env.production
+!conf/mau/config.yaml
+>>>>>>> main
 !conf/caddy/Caddyfile.tmpl
 conf/mastodon/*.env.production
 !conf/mastodon/example.env.production
