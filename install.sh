@@ -118,19 +118,19 @@ detect_connectivity () {
         ((i=i+=1))
     fi
 
-#    for site in ${DCOMMS_INSTANCES[@]}; do
-#        #this function should be more complex
-#        if curl -s -m 3 https://$site/dcomms -o /tmp/dcomms; then
-#            if (( $(stat -c %s /tmp/dcomms) > 3 )); then
-#                DCOMM_URL=https://$site/dcomms
-#                printf "${GREEN}## Successfully connected to $site${NC}\n"
-#                DCOMM_REACHABLE=true
-#                rm /tmp/dcomms
-#                break
-#            fi
-#            rm /tmp/dcomms
-#        fi
-#    done
+    for site in ${DCOMMS_INSTANCES[@]}; do
+        #this function should be more complex
+        if curl -s -m 3 https://$site/dcomms/hashes.txt -o /tmp/dcomms; then
+            if (( $(stat -c %s /tmp/dcomms) > 3 )); then
+                DCOMM_URL=https://$site/dcomms
+                printf "${GREEN}## Successfully connected to $site${NC}\n"
+                DCOMM_REACHABLE=true
+                rm /tmp/dcomms
+                break
+            fi
+            rm /tmp/dcomms
+        fi
+    done
 
     if [[ "${DCOMM_REACHABLE}" == false ]]; then
         printf "${RED}## Unable to connect to Dcomms instance${NC}\n"
