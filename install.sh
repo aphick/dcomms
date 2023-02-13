@@ -54,7 +54,7 @@ MAGNET_LINKS=(
 	"magnet:?xt=urn:btih:15DC00304F12941B9DC03103ABE70FA27D4FDB1A&dn=deltachat-mailadm-postfix_v0.0.3.tar"
 	"magnet:?xt=urn:btih:0DB1E810B538AE6B73C12F20461D8D90ADAE4372&dn=deltachat-mailadm_v0.0.1.tar"
 	"magnet:?xt=urn:btih:DD660DDCE77DBEBB3CBCDDE45600203DAD5FE488&dn=element-web_v1.11.17.tar"
-	"magnet:?xt=urn:btih:10975BDBDE587EF8AA44B3978293C65875A701DB&dn=mastodon_v4.0.2.tar"
+	"magnet:?xt=urn:btih:63C98AC0E0F799AEC65D6C6B4005E3748068A339&dn=mastodon_v4.1.0.tar"
 	"magnet:?xt=urn:btih:5D74122C024622B2E02DE5D852A17D5C22C2C28F&dn=maubot_v0.3.1.tar"
 	"magnet:?xt=urn:btih:824829D5F526A82C7209160C3E709B4BA6624442&dn=postgres_14-alpine.tar"
 	"magnet:?xt=urn:btih:4EEDD83F3DD76489F3AB70F07035CDE5B87C0A65&dn=redis_7.0-alpine.tar"
@@ -210,17 +210,17 @@ mastodon_config () {
     sudo cp -a $DCOMMS_DIR/conf/mastodon/example.env.production $DCOMMS_DIR/conf/mastodon/env.production
     SECRET_KEY_BASE=`sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 tootsuite/mastodon:v4.0.2 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.0 \
         bundle exec rake secret` >/dev/null
 
     OTP_SECRET=$(sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 tootsuite/mastodon:v4.0.2 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.0 \
         bundle exec rake secret) >/dev/null
 
     VAPID_KEYS=$(sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 tootsuite/mastodon:v4.0.2 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.0 \
         bundle exec rake mastodon:webpush:generate_vapid_key)>/dev/null
     VAPID_FRIENDLY_KEYS=${VAPID_KEYS//$'\n'/\\$'\n'}
 
