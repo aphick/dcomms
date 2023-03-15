@@ -232,8 +232,8 @@ mastodon_config () {
     
     printf "${YELLOW}## Initializing mastodon database${NC}\n"
     
-    docker compose -f ./conf/mastodon/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:prepare
-    docker compose -f ./conf/mastodon/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:migrate
+    docker compose -f ./conf/compose/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:prepare
+    docker compose -f ./conf/compose/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:migrate
 
     docker volume rm -f masto_data_tmp
 }
