@@ -74,7 +74,7 @@ social.{$DWEB_DOMAIN}, http://social.{$DWEB_ONION} {
     }
 }
 
-social.{{ env "DWEB_DOMAIN" }}, http://social.{{ env "DWEB_ONION" }}  {
+social.{$DWEB_DOMAIN}, http://social.{$DWEB_DOMAIN}  {
 
         root * /srv/mastodon/public
         encode gzip
