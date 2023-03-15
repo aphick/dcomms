@@ -4,6 +4,7 @@ networks:
   back:
 volumes:
   synapse_data:
+  synapse_db:
 services:
 ### ELEMENT
   # synapse is a matrix homeserver running as a service
