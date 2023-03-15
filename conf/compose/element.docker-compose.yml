@@ -56,7 +56,7 @@ services:
     depends_on:                                                                                      
       - caddy
     networks:
-      - caddy
+      - back
     deploy:
       mode: replicated
       replicas: 1
