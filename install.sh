@@ -359,8 +359,8 @@ main() {
             MAU=true
           ;;
         "5")
-            D_IMAGES+=("tootsuite/mastodon:v4.0.2" "redis:7.0-alpine" "postgres:14-alpine")
-            FILES+=("mastodon_4.0.2.tar" "postgres_14.tar" "redis_7.0.tar")
+            D_IMAGES+=("tootsuite/mastodon:v4.1.0" "redis:7.0-alpine" "postgres:14-alpine")
+            FILES+=("mastodon_4.1.0.tar" "postgres_14.tar" "redis_7.0.tar")
             FILE_MAGNETS+=("${MAGNET_LINKS[7]}$MAG_TRACKERS" "${MAGNET_LINKS[9]}$MAG_TRACKERS" "${MAGNET_LINKS[10]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/mastodon.docker-compose.yml "
             MASTO=true
