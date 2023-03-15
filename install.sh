@@ -194,11 +194,6 @@ matrix_config () {
     printf "    user: synapse\n    password: null\n    database: synapse\n    host: localhost\n" >> $DCOMMS_DIR/conf/element/config.json
     printf "    port: 5432\n    cp_min: 5\n    cp_max: 10\n" >> $DCOMMS_DIR/conf/element/config.json
 
-    printf "${YELLOW}## Initializing mastodon database${NC}\n"
-
-    docker compose -f ./conf/mastodon/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:prepare
-    docker compose -f ./conf/mastodon/mastodon.docker-compose.yml run --rm mastodon-web bundle exec rake db:migrate
-
     sed -i "s/TEMPLATE/$DWEB_DOMAIN/" $DCOMMS_DIR/conf/element/config.json
 }
 
