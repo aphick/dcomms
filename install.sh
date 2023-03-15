@@ -200,7 +200,7 @@ matrix_config () {
 #Mastodon's config file requires a number of keys to be generated. We spin up a temporary container to do this.
 #Volume must be removed before running
 mastodon_config () {
-    sudo docker volume rm masto_data_tmp 2> /dev/null
+    sudo docker volume rm masto_data_tmp 2> /dev/null || true
     printf "${YELLOW}## Generating mastodon config${NC}\n"
     sudo cp -a $DCOMMS_DIR/conf/mastodon/example.env.production $DCOMMS_DIR/conf/mastodon/env.production
     SECRET_KEY_BASE=`sudo docker run -it --rm \
