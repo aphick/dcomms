@@ -9,7 +9,7 @@ services:
 ### ELEMENT
   # synapse is a matrix homeserver running as a service
   synapse:
-    image: matrixdotorg/synapse:v1.74.0
+    image: matrixdotorg/synapse:v1.80.0
     entrypoint:
     - sh
     - -c
@@ -71,7 +71,7 @@ services:
 
   # element is a matrix web GUI running as a service
   element:
-    image: vectorim/element-web:v1.11.17
+    image: vectorim/element-web:v1.11.26
     networks:
       - back
     ports:
