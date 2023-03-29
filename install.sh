@@ -14,10 +14,10 @@ COMPOSE_FILES="-f ./conf/compose/docker-compose.yml "
 # Docker saved file names
 FILES=(
     "dcomms_conf_v2.tar" # If we can grab the install script we can likely grab the configs.
-    "caddy_2.6.2.tar"
+    "caddy_2.6.4.tar"
 )
 
-D_IMAGES=("caddy:2.6.2")
+D_IMAGES=("caddy:2.6.4")
 
 
 DCOMMS_INSTANCES=(
@@ -48,17 +48,17 @@ MAG_TRACKERS="&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A
 #Big ugly blob of links. Yikes
 MAGNET_LINKS=(
 	"magnet:?xt=urn:btih:806E6EA23B5098BB112B1C1EA6ACF1D4E374C1D8&dn=dcomms_conf_v2.tar"
-	"magnet:?xt=urn:btih:F1A024E0878324F3749193A28DE6C4C33252E670&dn=caddy_2.6.2.tar"
+	#"magnet:?xt=urn:btih:F1A024E0878324F3749193A28DE6C4C33252E670&dn=caddy_2.6.2.tar"
 	"magnet:?xt=urn:btih:9F004AEF55ECE1DF2908F6FA33C7FC7CDD5EEE43&dn=ceno-client_latest.tar"
 	"magnet:?xt=urn:btih:A8865661D17C7C1669738DE3892A245CBFE0B384&dn=deltachat-mailadm-dovecot_v0.0.1.tar"
 	"magnet:?xt=urn:btih:15DC00304F12941B9DC03103ABE70FA27D4FDB1A&dn=deltachat-mailadm-postfix_v0.0.3.tar"
 	"magnet:?xt=urn:btih:0DB1E810B538AE6B73C12F20461D8D90ADAE4372&dn=deltachat-mailadm_v0.0.1.tar"
-	"magnet:?xt=urn:btih:DD660DDCE77DBEBB3CBCDDE45600203DAD5FE488&dn=element-web_v1.11.17.tar"
-	"magnet:?xt=urn:btih:63C98AC0E0F799AEC65D6C6B4005E3748068A339&dn=mastodon_v4.1.0.tar"
+	#"magnet:?xt=urn:btih:DD660DDCE77DBEBB3CBCDDE45600203DAD5FE488&dn=element-web_v1.11.17.tar"
+	#"magnet:?xt=urn:btih:63C98AC0E0F799AEC65D6C6B4005E3748068A339&dn=mastodon_v4.1.0.tar"
 	"magnet:?xt=urn:btih:5D74122C024622B2E02DE5D852A17D5C22C2C28F&dn=maubot_v0.3.1.tar"
 	"magnet:?xt=urn:btih:824829D5F526A82C7209160C3E709B4BA6624442&dn=postgres_14-alpine.tar"
 	"magnet:?xt=urn:btih:4EEDD83F3DD76489F3AB70F07035CDE5B87C0A65&dn=redis_7.0-alpine.tar"
-	"magnet:?xt=urn:btih:24116174AF54EC4DD47015E634F3DB1B6B2A9DA3&dn=synapse_v1.74.0.tar"
+	#"magnet:?xt=urn:btih:24116174AF54EC4DD47015E634F3DB1B6B2A9DA3&dn=synapse_v1.74.0.tar"
 )
 
 
@@ -179,7 +179,7 @@ matrix_config () {
         -e SYNAPSE_SERVER_NAME=matrix.$DWEB_DOMAIN \
         -e SYNAPSE_REPORT_STATS=no \
         -e SYNAPSE_DATA_DIR=/data \
-    matrixdotorg/synapse:v1.74.0 generate 2>/dev/null
+    matrixdotorg/synapse:v1.80.0 generate 2>/dev/null
     sudo chown -R $USER:$USER $DCOMMS_DIR/conf/synapse/
 
     sed -i -z "s/database.*homeserver.db//" $DCOMMS_DIR/conf/element/config.json
@@ -205,17 +205,17 @@ mastodon_config () {
     sudo cp -a $DCOMMS_DIR/conf/mastodon/example.env.production $DCOMMS_DIR/conf/mastodon/env.production
     SECRET_KEY_BASE=`sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.0 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.1 \
         bundle exec rake secret` >/dev/null
 
     OTP_SECRET=$(sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.0 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.1 \
         bundle exec rake secret) >/dev/null
 
     VAPID_KEYS=$(sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.0 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.1 \
         bundle exec rake mastodon:webpush:generate_vapid_key)>/dev/null
     VAPID_FRIENDLY_KEYS=${VAPID_KEYS//$'\n'/\\$'\n'}
 
@@ -333,8 +333,8 @@ main() {
             DELTA=true
           ;;
         "2")
-            D_IMAGES+=("vectorim/element-web:v1.11.17" "matrixdotorg/synapse:v1.74.0")
-            FILES+=("synapse_v1.74.0.tar" "element-web_v1.11.17.tar")
+            D_IMAGES+=("vectorim/element-web:v1.11.26" "matrixdotorg/synapse:v1.80.0")
+            FILES+=("synapse_v1.80.0.tar" "element-web_v1.11.26.tar")
             FILE_MAGNETS+=("${MAGNET_LINKS[11]}$MAG_TRACKERS" "${MAGNET_LINKS[6]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/element.docker-compose.yml "
             MATRIX=true
@@ -354,8 +354,8 @@ main() {
             MAU=true
           ;;
         "5")
-            D_IMAGES+=("tootsuite/mastodon:v4.1.0" "redis:7.0-alpine" "postgres:14-alpine")
-            FILES+=("mastodon_4.1.0.tar" "postgres_14.tar" "redis_7.0.tar")
+            D_IMAGES+=("tootsuite/mastodon:v4.1.1" "redis:7.0-alpine" "postgres:14-alpine")
+            FILES+=("mastodon_4.1.1.tar" "postgres_14.tar" "redis_7.0.tar")
             FILE_MAGNETS+=("${MAGNET_LINKS[7]}$MAG_TRACKERS" "${MAGNET_LINKS[9]}$MAG_TRACKERS" "${MAGNET_LINKS[10]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/mastodon.docker-compose.yml "
             MASTO=true
