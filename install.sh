@@ -205,17 +205,17 @@ mastodon_config () {
     sudo cp -a $DCOMMS_DIR/conf/mastodon/example.env.production $DCOMMS_DIR/conf/mastodon/env.production
     SECRET_KEY_BASE=`sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.1 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.2 \
         bundle exec rake secret` >/dev/null
 
     OTP_SECRET=$(sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.1 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.2 \
         bundle exec rake secret) >/dev/null
 
     VAPID_KEYS=$(sudo docker run -it --rm \
         --mount type=volume,src=masto_data_tmp,dst=/opt/mastodon \
-            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.1 \
+            -e RUBYOPT=-W0 tootsuite/mastodon:v4.1.2 \
         bundle exec rake mastodon:webpush:generate_vapid_key)>/dev/null
     VAPID_FRIENDLY_KEYS=${VAPID_KEYS//$'\n'/\\$'\n'}
 
@@ -354,8 +354,8 @@ main() {
             MAU=true
           ;;
         "5")
-            D_IMAGES+=("tootsuite/mastodon:v4.1.1" "redis:7.0-alpine" "postgres:14-alpine")
-            FILES+=("mastodon_4.1.1.tar" "postgres_14.tar" "redis_7.0.tar")
+            D_IMAGES+=("tootsuite/mastodon:v4.1.2" "redis:7.0-alpine" "postgres:14-alpine")
+            FILES+=("mastodon_4.1.2.tar" "postgres_14.tar" "redis_7.0.tar")
             FILE_MAGNETS+=("${MAGNET_LINKS[7]}$MAG_TRACKERS" "${MAGNET_LINKS[9]}$MAG_TRACKERS" "${MAGNET_LINKS[10]}$MAG_TRACKERS")
             COMPOSE_FILES+="-f ./conf/compose/mastodon.docker-compose.yml "
             MASTO=true
